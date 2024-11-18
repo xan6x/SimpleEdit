@@ -16,6 +16,7 @@ use xvqrlz\simpleedit\command\PasteCommand;
 use xvqrlz\simpleedit\command\ReplaceCommand;
 use xvqrlz\simpleedit\command\ExpandCommand;
 use xvqrlz\simpleedit\command\ContractCommand;
+use xvqrlz\simpleedit\command\SphereCommand;
 
 final class Loader extends PluginBase
 {
@@ -46,7 +47,8 @@ final class Loader extends PluginBase
             new PasteCommand($this),
             new ReplaceCommand($this),
             new ExpandCommand($this),
-            new ContractCommand($this)
+            new ContractCommand($this),
+            new SphereCommand($this)
         ];
 
         foreach ($commands as $command) {

@@ -178,6 +178,36 @@ final class EditManager
         $player->sendMessage("§aRegion contracted $amount blocks $direction.");
     }
 
+    public function generateSphere(Player $player, Position $center, int $radius, int $blockId, int $meta = 0): void
+    {
+        $startTime = microtime(true);
+        $name = strtolower($player->getName());
+        
+        if ($radius <= 0) {
+            $player->sendMessage("§cRadius must be greater than 0.");
+            return;
+        }
+
+        $blockPool = [];
+        $centerX = $center->getFloorX();
+        $centerY = $center->getFloorY();
+        $centerZ = $center->getFloorZ();
+
+        for ($x = -$radius; $x <= $radius; $x++) {
+            for ($y = -$radius; $y <= $radius; $y++) {
+                for ($z = -$radius; $z <= $radius; $z++) {
+                    if (sqrt($x * $x + $y * $y + $z * $z) <= $radius) {
+                        $blockPool[] = new BlockData($blockId, $meta, new Position($centerX + $x, $centerY + $y, $centerZ + $z, $player->getLevel()));
+                    }
+                }
+            }
+        }
+
+        $this->history[$name][] = new BlockStorage($player->getLevel(), $centerX - $radius, $centerY - $radius, $centerZ - $radius, $centerX + $radius, $centerY + $radius, $centerZ + $radius);
+
+        Utils::scheduleTask($player, $blockPool, "§eGenerating sphere...", "§aSphere generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+    }
+
     public function undo(Player $player): void
     {
         $startTime = microtime(true);

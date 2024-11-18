@@ -33,3 +33,6 @@ permissions:
   simpleedit.command.contract:
     description: Allows contracting the selected region
     default: op
+  simpleedit.command.sphere:
+    description: Allows creating a sphere
+    default: op
