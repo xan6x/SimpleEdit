@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace xvqrlz\simpleedit\manager;
 
-use pocketmine\plugin\PluginBase;
 use pocketmine\Player;
 use pocketmine\level\Position;
+use pocketmine\plugin\PluginBase;
 use xvqrlz\simpleedit\data\BlockData;
 use xvqrlz\simpleedit\data\BlockStorage;
-use xvqrlz\simpleedit\task\QueuedBlockUpdateTask;
+use xvqrlz\simpleedit\utils\Utils;
 
 final class EditManager
 {
@@ -45,7 +45,7 @@ final class EditManager
             return;
         }
 
-        [$minX, $minY, $minZ, $maxX, $maxY, $maxZ] = $this->calculateBounds($pos1, $pos2);
+        [$minX, $minY, $minZ, $maxX, $maxY, $maxZ] = Utils::calculateBounds($pos1, $pos2);
 
         $blockStorage = new BlockStorage($player->getLevel(), $minX, $minY, $minZ, $maxX, $maxY, $maxZ);
         $this->history[$name][] = $blockStorage;
@@ -55,7 +55,7 @@ final class EditManager
             $blockStorage->getStorage()
         );
 
-        $this->scheduleTask($player, $blockPool, "§eBlocks replacing...", "§aRegion set complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        Utils::scheduleTask($player, $blockPool, "§eBlocks replacing...", "§aRegion set complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function copy(Player $player): void
@@ -69,7 +69,7 @@ final class EditManager
             return;
         }
 
-        [$minX, $minY, $minZ, $maxX, $maxY, $maxZ] = $this->calculateBounds($pos1, $pos2);
+        [$minX, $minY, $minZ, $maxX, $maxY, $maxZ] = Utils::calculateBounds($pos1, $pos2);
         $blockStorage = new BlockStorage($player->getLevel(), $minX, $minY, $minZ, $maxX, $maxY, $maxZ);
         $this->clipboard[$name] = $blockStorage->getStorage();
         $player->sendMessage("§aCopied region to clipboard.");
@@ -95,7 +95,7 @@ final class EditManager
             $blockPool[] = new BlockData($blockData->getId(), $blockData->getMeta(), $newPosition);
         }
 
-        $this->scheduleTask($player, $blockPool, "§aPasting blocks...", "§aPaste complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        Utils::scheduleTask($player, $blockPool, "§aPasting blocks...", "§aPaste complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function replace(Player $player, int $oldBlockId, int $newBlockId, int $oldMeta = 0, int $newMeta = 0): void
@@ -110,7 +110,7 @@ final class EditManager
             return;
         }
 
-        [$minX, $minY, $minZ, $maxX, $maxY, $maxZ] = $this->calculateBounds($pos1, $pos2);
+        [$minX, $minY, $minZ, $maxX, $maxY, $maxZ] = Utils::calculateBounds($pos1, $pos2);
         $blockStorage = new BlockStorage($player->getLevel(), $minX, $minY, $minZ, $maxX, $maxY, $maxZ);
         $this->history[$name][] = $blockStorage;
 
@@ -121,7 +121,61 @@ final class EditManager
             $blockStorage->getStorage()
         );
 
-        $this->scheduleTask($player, $blockPool, "§eReplacing blocks...", "§aReplace complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        Utils::scheduleTask($player, $blockPool, "§eReplacing blocks...", "§aReplace complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+    }
+
+    public function expand(Player $player, string $direction, int $amount): void
+    {
+        $name = strtolower($player->getName());
+        $pos1 = $this->getPosition($player, 1);
+        $pos2 = $this->getPosition($player, 2);
+
+        if ($pos1 === null || $pos2 === null) {
+            $player->sendMessage("§cBoth positions must be set.");
+            return;
+        }
+
+        match (strtolower($direction)) {
+            "up" => $pos2->y += $amount,
+            "down" => $pos1->y -= $amount,
+            "north" => $pos1->z -= $amount,
+            "south" => $pos2->z += $amount,
+            "west" => $pos1->x -= $amount,
+            "east" => $pos2->x += $amount,
+            default => $player->sendMessage("§cInvalid direction. Use correct: up, down, north, south, west, or east.")
+        };
+
+        $this->setPosition($player, $pos1, 1);
+        $this->setPosition($player, $pos2, 2);
+
+        $player->sendMessage("§aRegion expanded $amount blocks $direction.");
+    }
+
+    public function contract(Player $player, string $direction, int $amount): void
+    {
+        $name = strtolower($player->getName());
+        $pos1 = $this->getPosition($player, 1);
+        $pos2 = $this->getPosition($player, 2);
+
+        if ($pos1 === null || $pos2 === null) {
+            $player->sendMessage("§cBoth positions must be set.");
+            return;
+        }
+
+        match (strtolower($direction)) {
+            "up" => $pos2->y -= $amount,
+            "down" => $pos1->y += $amount,
+            "north" => $pos1->z += $amount,
+            "south" => $pos2->z -= $amount,
+            "west" => $pos1->x += $amount,
+            "east" => $pos2->x -= $amount,
+            default => $player->sendMessage("§cInvalid direction. Use correct: up, down, north, south, west, or east.")
+        };
+
+        $this->setPosition($player, $pos1, 1);
+        $this->setPosition($player, $pos2, 2);
+
+        $player->sendMessage("§aRegion contracted $amount blocks $direction.");
     }
 
     public function undo(Player $player): void
@@ -137,30 +191,6 @@ final class EditManager
         $blockStorage = array_pop($this->history[$name]);
         $blockPool = $blockStorage->getStorage();
 
-        $this->scheduleTask($player, $blockPool, "§eUndoing changes...", "§aUndo complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
-    }
-
-    private function calculateBounds(Position $pos1, Position $pos2): array
-    {
-        return [
-            min($pos1->getFloorX(), $pos2->getFloorX()),
-            min($pos1->getFloorY(), $pos2->getFloorY()),
-            min($pos1->getFloorZ(), $pos2->getFloorZ()),
-            max($pos1->getFloorX(), $pos2->getFloorX()),
-            max($pos1->getFloorY(), $pos2->getFloorY()),
-            max($pos1->getFloorZ(), $pos2->getFloorZ()),
-        ];
-    }
-
-    private function scheduleTask(Player $player, array $blockPool, string $popupMessage, string $completionMessage): void
-    {
-        $task = new QueuedBlockUpdateTask(
-            $player->getLevel(),
-            $blockPool,
-            fn() => $player->sendPopup($popupMessage),
-            fn() => $player->sendMessage($completionMessage)
-        );
-
-        $this->plugin->getServer()->getScheduler()->scheduleRepeatingTask($task, 1);
+        Utils::scheduleTask($player, $blockPool, "§eUndoing changes...", "§aUndo complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 }

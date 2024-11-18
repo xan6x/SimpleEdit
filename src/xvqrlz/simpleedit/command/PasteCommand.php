@@ -14,7 +14,7 @@ class PasteCommand extends Command
 {
     public function __construct(private Loader $plugin)
     {
-        parent::__construct("paste", "Paste the copied region at your current position", "/paste", []);
+        parent::__construct("/paste", "Paste the copied region at your current position", "//paste", []);
         $this->setPermission("simpleedit.command.paste");
     }
 

@@ -27,3 +27,9 @@ permissions:
   simpleedit.command.replace:
     description: Allows replacing blocks in the selected region
     default: op
+  simpleedit.command.expand:
+    description: Allows expanding the selected region
+    default: op
+  simpleedit.command.contract:
+    description: Allows contracting the selected region
+    default: op

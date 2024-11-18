@@ -15,7 +15,7 @@ class Pos1Command extends Command
 
     public function __construct(private Loader $plugin)
     {
-        parent::__construct("pos1", "Sets the first position for region selection", "/pos1", []);
+        parent::__construct("/pos1", "Sets the first position for region selection", "//pos1", []);
         $this->setPermission("simpleedit.command.pos1");
     }
 

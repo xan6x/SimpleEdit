@@ -14,7 +14,7 @@ class UndoCommand extends Command
 {
     public function __construct(private Loader $plugin)
     {
-        parent::__construct("undo", "Undo the last edit", "/undo", []);
+        parent::__construct("/undo", "Undo the last edit", "//undo", []);
         $this->setPermission("simpleedit.command.undo");
     }
 

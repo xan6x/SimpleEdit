@@ -16,7 +16,7 @@ class SetCommand extends Command
 
     public function __construct(private Loader $plugin)
     {
-        parent::__construct("set", "Sets blocks in the selected region", "/set <block_id>[:<meta>]", []);
+        parent::__construct("/set", "Sets blocks in the selected region", "//set <block_id>[:<meta>]", []);
         $this->setPermission("simpleedit.command.set");
     }
 
@@ -32,7 +32,7 @@ class SetCommand extends Command
         }
 
         if (count($args) < 1) {
-            $sender->sendMessage(TextFormat::RED . "Usage: /set <block_id>[:<meta>]");
+            $sender->sendMessage(TextFormat::RED . "Invalid usage. Correct usage: /set <block_id>[:<meta>]");
             return false;
         }
 

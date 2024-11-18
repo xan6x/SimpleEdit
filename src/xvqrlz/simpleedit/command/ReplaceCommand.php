@@ -14,7 +14,7 @@ class ReplaceCommand extends Command
 {
     public function __construct(private Loader $plugin)
     {
-        parent::__construct("replace", "Replaces blocks in the selected region", "/replace <old_block_id>[:<old_meta>] <new_block_id>[:<new_meta>]", []);
+        parent::__construct("/replace", "Replaces blocks in the selected region", "//replace <old_block_id>[:<old_meta>] <new_block_id>[:<new_meta>]", []);
         $this->setPermission("simpleedit.command.replace");
     }
 
