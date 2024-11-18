@@ -36,7 +36,6 @@ final class EditManager
     public function setRegion(Player $player, int $blockId, int $meta = 0): void
     {
         $startTime = microtime(true);
-
         $name = strtolower($player->getName());
         $pos1 = $this->getPosition($player, 1);
         $pos2 = $this->getPosition($player, 2);
@@ -46,38 +45,17 @@ final class EditManager
             return;
         }
 
-        $minX = min($pos1->getFloorX(), $pos2->getFloorX());
-        $minY = min($pos1->getFloorY(), $pos2->getFloorY());
-        $minZ = min($pos1->getFloorZ(), $pos2->getFloorZ());
-        $maxX = max($pos1->getFloorX(), $pos2->getFloorX());
-        $maxY = max($pos1->getFloorY(), $pos2->getFloorY());
-        $maxZ = max($pos1->getFloorZ(), $pos2->getFloorZ());
+        [$minX, $minY, $minZ, $maxX, $maxY, $maxZ] = $this->calculateBounds($pos1, $pos2);
 
-        $blockStorage = new BlockStorage(
-            $player->getLevel(),
-            $minX, $minY, $minZ,
-            $maxX, $maxY, $maxZ
-        );
-
+        $blockStorage = new BlockStorage($player->getLevel(), $minX, $minY, $minZ, $maxX, $maxY, $maxZ);
         $this->history[$name][] = $blockStorage;
 
         $blockPool = array_map(
-            fn(BlockData $blockData) => new BlockData(
-                $blockId,
-                $meta,
-                $blockData->getPosition()
-            ),
+            fn(BlockData $blockData) => new BlockData($blockId, $meta, $blockData->getPosition()),
             $blockStorage->getStorage()
         );
 
-        $task = new QueuedBlockUpdateTask(
-            $player->getLevel(),
-            $blockPool,
-            fn() => $player->sendPopup("§eBlocks replacing..."),
-            fn() => $player->sendMessage("§aRegion set complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.")
-        );
-
-        $this->plugin->getServer()->getScheduler()->scheduleRepeatingTask($task, 1);
+        $this->scheduleTask($player, $blockPool, "§eBlocks replacing...", "§aRegion set complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function copy(Player $player): void
@@ -91,19 +69,8 @@ final class EditManager
             return;
         }
 
-        $minX = min($pos1->getFloorX(), $pos2->getFloorX());
-        $minY = min($pos1->getFloorY(), $pos2->getFloorY());
-        $minZ = min($pos1->getFloorZ(), $pos2->getFloorZ());
-        $maxX = max($pos1->getFloorX(), $pos2->getFloorX());
-        $maxY = max($pos1->getFloorY(), $pos2->getFloorY());
-        $maxZ = max($pos1->getFloorZ(), $pos2->getFloorZ());
-
-        $blockStorage = new BlockStorage(
-            $player->getLevel(),
-            $minX, $minY, $minZ,
-            $maxX, $maxY, $maxZ
-        );
-
+        [$minX, $minY, $minZ, $maxX, $maxY, $maxZ] = $this->calculateBounds($pos1, $pos2);
+        $blockStorage = new BlockStorage($player->getLevel(), $minX, $minY, $minZ, $maxX, $maxY, $maxZ);
         $this->clipboard[$name] = $blockStorage->getStorage();
         $player->sendMessage("§aCopied region to clipboard.");
     }
@@ -111,7 +78,6 @@ final class EditManager
     public function paste(Player $player, Position $target): void
     {
         $startTime = microtime(true);
-
         $name = strtolower($player->getName());
 
         if (!isset($this->clipboard[$name])) {
@@ -123,37 +89,18 @@ final class EditManager
         $origin = $clipboardData[0]->getPosition();
         $blockPool = [];
 
-        $minX = $origin->getFloorX();
-        $minY = $origin->getFloorY();
-        $minZ = $origin->getFloorZ();
-        $maxX = $origin->getFloorX();
-        $maxY = $origin->getFloorY();
-        $maxZ = $origin->getFloorZ();
-
         foreach ($clipboardData as $blockData) {
             $relativePosition = $blockData->getPosition()->subtract($origin);
             $newPosition = $target->add($relativePosition->x, $relativePosition->y, $relativePosition->z);
             $blockPool[] = new BlockData($blockData->getId(), $blockData->getMeta(), $newPosition);
-
-            $maxX = max($maxX, $newPosition->getFloorX());
-            $maxY = max($maxY, $newPosition->getFloorY());
-            $maxZ = max($maxZ, $newPosition->getFloorZ());
         }
 
-        $task = new QueuedBlockUpdateTask(
-            $player->getLevel(),
-            $blockPool,
-            fn() => $player->sendPopup("§aPasting blocks..."),
-            fn() => $player->sendMessage("§aPaste complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.")
-        );
-
-        $this->plugin->getServer()->getScheduler()->scheduleRepeatingTask($task, 1);
+        $this->scheduleTask($player, $blockPool, "§aPasting blocks...", "§aPaste complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function replace(Player $player, int $oldBlockId, int $newBlockId, int $oldMeta = 0, int $newMeta = 0): void
     {
         $startTime = microtime(true);
-
         $name = strtolower($player->getName());
         $pos1 = $this->getPosition($player, 1);
         $pos2 = $this->getPosition($player, 2);
@@ -163,19 +110,8 @@ final class EditManager
             return;
         }
 
-        $minX = min($pos1->getFloorX(), $pos2->getFloorX());
-        $minY = min($pos1->getFloorY(), $pos2->getFloorY());
-        $minZ = min($pos1->getFloorZ(), $pos2->getFloorZ());
-        $maxX = max($pos1->getFloorX(), $pos2->getFloorX());
-        $maxY = max($pos1->getFloorY(), $pos2->getFloorY());
-        $maxZ = max($pos1->getFloorZ(), $pos2->getFloorZ());
-
-        $blockStorage = new BlockStorage(
-            $player->getLevel(),
-            $minX, $minY, $minZ,
-            $maxX, $maxY, $maxZ
-        );
-
+        [$minX, $minY, $minZ, $maxX, $maxY, $maxZ] = $this->calculateBounds($pos1, $pos2);
+        $blockStorage = new BlockStorage($player->getLevel(), $minX, $minY, $minZ, $maxX, $maxY, $maxZ);
         $this->history[$name][] = $blockStorage;
 
         $blockPool = array_map(
@@ -185,23 +121,15 @@ final class EditManager
             $blockStorage->getStorage()
         );
 
-        $task = new QueuedBlockUpdateTask(
-            $player->getLevel(),
-            $blockPool,
-            fn() => $player->sendPopup("§eReplacing blocks..."),
-            fn() => $player->sendMessage("§aReplace complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.")
-        );
-
-        $this->plugin->getServer()->getScheduler()->scheduleRepeatingTask($task, 1);
+        $this->scheduleTask($player, $blockPool, "§eReplacing blocks...", "§aReplace complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function undo(Player $player): void
     {
         $startTime = microtime(true);
-
         $name = strtolower($player->getName());
 
-        if (!isset($this->history[$name]) || empty($this->history[$name])) {
+        if (empty($this->history[$name])) {
             $player->sendMessage("§cNo edits to undo.");
             return;
         }
@@ -209,11 +137,28 @@ final class EditManager
         $blockStorage = array_pop($this->history[$name]);
         $blockPool = $blockStorage->getStorage();
 
+        $this->scheduleTask($player, $blockPool, "§eUndoing changes...", "§aUndo complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+    }
+
+    private function calculateBounds(Position $pos1, Position $pos2): array
+    {
+        return [
+            min($pos1->getFloorX(), $pos2->getFloorX()),
+            min($pos1->getFloorY(), $pos2->getFloorY()),
+            min($pos1->getFloorZ(), $pos2->getFloorZ()),
+            max($pos1->getFloorX(), $pos2->getFloorX()),
+            max($pos1->getFloorY(), $pos2->getFloorY()),
+            max($pos1->getFloorZ(), $pos2->getFloorZ()),
+        ];
+    }
+
+    private function scheduleTask(Player $player, array $blockPool, string $popupMessage, string $completionMessage): void
+    {
         $task = new QueuedBlockUpdateTask(
             $player->getLevel(),
             $blockPool,
-            fn() => $player->sendPopup("§eUndoing changes..."),
-            fn() => $player->sendMessage("§aUndo complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.")
+            fn() => $player->sendPopup($popupMessage),
+            fn() => $player->sendMessage($completionMessage)
         );
 
         $this->plugin->getServer()->getScheduler()->scheduleRepeatingTask($task, 1);
