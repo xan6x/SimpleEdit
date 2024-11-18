@@ -10,13 +10,12 @@ use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 use xvqrlz\simpleedit\Loader;
 
-class Pos2Command extends Command
+class CopyCommand extends Command
 {
-
     public function __construct(private Loader $plugin)
     {
-        parent::__construct("pos2", "Sets the second position for region selection", "/pos2", []);
-        $this->setPermission("simpleedit.command.pos2");
+        parent::__construct("copy", "Copy the selected region to clipboard", "/copy", []);
+        $this->setPermission("simpleedit.command.copy");
     }
 
     public function execute(CommandSender $sender, $label, array $args): bool
@@ -30,9 +29,7 @@ class Pos2Command extends Command
             return false;
         }
 
-        $position = $sender->getPosition();
-        $this->plugin->getEditManager()->setPosition($sender, $position, 2);
-
+        $this->plugin->getEditManager()->copy($sender);
         return true;
     }
 }

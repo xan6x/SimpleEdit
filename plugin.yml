@@ -18,3 +18,9 @@ permissions:
   simpleedit.command.undo:
     description: Allows undoing the last edit
     default: op
+  simpleedit.command.copy:
+    description: Allows copying the selected region
+    default: op
+  simpleedit.command.paste:
+    description: Allows pasting the copied region
+    default: op

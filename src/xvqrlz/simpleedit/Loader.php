@@ -11,6 +11,8 @@ use xvqrlz\simpleedit\command\SetCommand;
 use xvqrlz\simpleedit\command\UndoCommand;
 use xvqrlz\simpleedit\command\Pos1Command;
 use xvqrlz\simpleedit\command\Pos2Command;
+use xvqrlz\simpleedit\command\CopyCommand;
+use xvqrlz\simpleedit\command\PasteCommand;
 
 final class Loader extends PluginBase
 {
@@ -36,7 +38,9 @@ final class Loader extends PluginBase
             new SetCommand($this),
             new UndoCommand($this),
             new Pos1Command($this),
-            new Pos2Command($this)
+            new Pos2Command($this),
+            new CopyCommand($this),
+            new PasteCommand($this)
         ];
 
         foreach ($commands as $command) {

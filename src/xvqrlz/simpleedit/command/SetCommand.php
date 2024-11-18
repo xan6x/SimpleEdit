@@ -26,6 +26,11 @@ class SetCommand extends Command
             return false;
         }
 
+        if (!$sender instanceof Player) {
+            $sender->sendMessage(TextFormat::RED . "Only in-game");
+            return false;
+        }
+
         if (count($args) < 1) {
             $sender->sendMessage(TextFormat::RED . "Usage: /set <block_id>[:<meta>]");
             return false;

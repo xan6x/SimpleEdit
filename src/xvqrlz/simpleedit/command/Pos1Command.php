@@ -25,6 +25,11 @@ class Pos1Command extends Command
             return false;
         }
 
+        if (!$sender instanceof Player) {
+            $sender->sendMessage(TextFormat::RED . "Only in-game");
+            return false;
+        }
+
         $position = $sender->getPosition();
         $this->plugin->getEditManager()->setPosition($sender, $position, 1);
 
