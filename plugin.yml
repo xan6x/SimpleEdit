@@ -1,0 +1,20 @@
+name: SimpleEdit
+main: xvqrlz\simpleedit\Loader
+version: 1.0.0
+api: 3.0.0-ALPHA7
+author: xvqrlz
+description: A simple and optimized WorldEdit plugin for PocketMine-MP
+
+permissions:
+  simpleedit.command.pos1:
+    description: Allows setting the first position for region selection
+    default: op
+  simpleedit.command.pos2:
+    description: Allows setting the second position for region selection
+    default: op
+  simpleedit.command.set:
+    description: Allows setting blocks in the selected region
+    default: op
+  simpleedit.command.undo:
+    description: Allows undoing the last edit
+    default: op
