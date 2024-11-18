@@ -13,6 +13,7 @@ use xvqrlz\simpleedit\command\Pos1Command;
 use xvqrlz\simpleedit\command\Pos2Command;
 use xvqrlz\simpleedit\command\CopyCommand;
 use xvqrlz\simpleedit\command\PasteCommand;
+use xvqrlz\simpleedit\command\ReplaceCommand;
 
 final class Loader extends PluginBase
 {
@@ -40,7 +41,8 @@ final class Loader extends PluginBase
             new Pos1Command($this),
             new Pos2Command($this),
             new CopyCommand($this),
-            new PasteCommand($this)
+            new PasteCommand($this),
+            new ReplaceCommand($this)
         ];
 
         foreach ($commands as $command) {

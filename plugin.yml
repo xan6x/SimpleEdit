@@ -24,3 +24,6 @@ permissions:
   simpleedit.command.paste:
     description: Allows pasting the copied region
     default: op
+  simpleedit.command.replace:
+    description: Allows replacing blocks in the selected region
+    default: op

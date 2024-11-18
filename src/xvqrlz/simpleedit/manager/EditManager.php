@@ -150,6 +150,51 @@ final class EditManager
         $this->plugin->getServer()->getScheduler()->scheduleRepeatingTask($task, 1);
     }
 
+    public function replace(Player $player, int $oldBlockId, int $newBlockId, int $oldMeta = 0, int $newMeta = 0): void
+    {
+        $startTime = microtime(true);
+
+        $name = strtolower($player->getName());
+        $pos1 = $this->getPosition($player, 1);
+        $pos2 = $this->getPosition($player, 2);
+
+        if ($pos1 === null || $pos2 === null) {
+            $player->sendMessage("§cBoth positions must be set.");
+            return;
+        }
+
+        $minX = min($pos1->getFloorX(), $pos2->getFloorX());
+        $minY = min($pos1->getFloorY(), $pos2->getFloorY());
+        $minZ = min($pos1->getFloorZ(), $pos2->getFloorZ());
+        $maxX = max($pos1->getFloorX(), $pos2->getFloorX());
+        $maxY = max($pos1->getFloorY(), $pos2->getFloorY());
+        $maxZ = max($pos1->getFloorZ(), $pos2->getFloorZ());
+
+        $blockStorage = new BlockStorage(
+            $player->getLevel(),
+            $minX, $minY, $minZ,
+            $maxX, $maxY, $maxZ
+        );
+
+        $this->history[$name][] = $blockStorage;
+
+        $blockPool = array_map(
+            fn(BlockData $blockData) => $blockData->getId() === $oldBlockId && $blockData->getMeta() === $oldMeta
+                ? new BlockData($newBlockId, $newMeta, $blockData->getPosition())
+                : $blockData,
+            $blockStorage->getStorage()
+        );
+
+        $task = new QueuedBlockUpdateTask(
+            $player->getLevel(),
+            $blockPool,
+            fn() => $player->sendPopup("§eReplacing blocks..."),
+            fn() => $player->sendMessage("§aReplace complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.")
+        );
+
+        $this->plugin->getServer()->getScheduler()->scheduleRepeatingTask($task, 1);
+    }
+
     public function undo(Player $player): void
     {
         $startTime = microtime(true);
