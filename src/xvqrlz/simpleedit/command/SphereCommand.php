@@ -8,6 +8,7 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
+use xvqrlz\simpleedit\manager\EditManager;
 use xvqrlz\simpleedit\Loader;
 
 class SphereCommand extends Command
@@ -41,7 +42,7 @@ class SphereCommand extends Command
 
         $center = $sender->getPosition();
 
-        $this->plugin->getEditManager()->generateSphere($sender, $center, $radius, $blockId, $meta);
+        EditManager::getInstance()->generateSphere($sender, $center, $radius, $blockId, $meta);
 
         return true;
     }

@@ -8,6 +8,7 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
+use xvqrlz\simpleedit\manager\EditManager;
 use xvqrlz\simpleedit\Loader;
 
 class UndoCommand extends Command
@@ -29,7 +30,7 @@ class UndoCommand extends Command
             return false;
         }
 
-        $this->plugin->getEditManager()->undo($sender);
+        EditManager::getInstance()->undo($sender);
         return true;
     }
 }

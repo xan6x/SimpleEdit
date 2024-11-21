@@ -8,6 +8,7 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
+use xvqrlz\simpleedit\manager\EditManager;
 use xvqrlz\simpleedit\Loader;
 
 class ReplaceCommand extends Command
@@ -42,7 +43,7 @@ class ReplaceCommand extends Command
         $newBlockId = (int)$newBlockData[0];
         $newMeta = isset($newBlockData[1]) ? (int)$newBlockData[1] : 0;
 
-        $this->plugin->getEditManager()->replace($sender, $oldBlockId, $newBlockId, $oldMeta, $newMeta);
+        EditManager::getInstance()->replace($sender, $oldBlockId, $newBlockId, $oldMeta, $newMeta);
 
         return true;
     }

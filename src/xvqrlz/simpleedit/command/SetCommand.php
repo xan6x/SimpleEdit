@@ -9,6 +9,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
+use xvqrlz\simpleedit\manager\EditManager;
 use xvqrlz\simpleedit\Loader;
 
 class SetCommand extends Command
@@ -40,7 +41,7 @@ class SetCommand extends Command
         $blockId = (int)$blockData[0];
         $meta = isset($blockData[1]) ? (int)$blockData[1] : 0;
 
-        $this->plugin->getEditManager()->setRegion($sender, $blockId, $meta);
+        EditManager::getInstance()->setRegion($sender, $blockId, $meta);
 
         return true;
     }

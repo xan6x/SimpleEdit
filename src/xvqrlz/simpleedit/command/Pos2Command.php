@@ -8,6 +8,7 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
+use xvqrlz\simpleedit\manager\EditManager;
 use xvqrlz\simpleedit\Loader;
 
 class Pos2Command extends Command
@@ -31,7 +32,7 @@ class Pos2Command extends Command
         }
 
         $position = $sender->getPosition();
-        $this->plugin->getEditManager()->setPosition($sender, $position, 2);
+        EditManager::getInstance()->setPosition($sender, $position, 2);
 
         return true;
     }

@@ -8,6 +8,7 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
+use xvqrlz\simpleedit\manager\EditManager;
 use xvqrlz\simpleedit\Loader;
 
 class PasteCommand extends Command
@@ -30,7 +31,7 @@ class PasteCommand extends Command
         }
 
         $position = $sender->getPosition();
-        $this->plugin->getEditManager()->paste($sender, $position);
+        EditManager::getInstance()->paste($sender, $position);
         return true;
     }
 }

@@ -8,6 +8,7 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
+use xvqrlz\simpleedit\manager\EditManager;
 use xvqrlz\simpleedit\Loader;
 
 class ExpandCommand extends Command
@@ -37,7 +38,7 @@ class ExpandCommand extends Command
         $direction = $args[0];
         $amount = (int)$args[1];
 
-        $this->plugin->getEditManager()->expand($sender, $direction, $amount);
+        EditManager::getInstance()->expand($sender, $direction, $amount);
 
         return true;
     }

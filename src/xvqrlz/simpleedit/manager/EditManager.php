@@ -7,12 +7,15 @@ namespace xvqrlz\simpleedit\manager;
 use pocketmine\Player;
 use pocketmine\level\Position;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\SingletonTrait;
 use xvqrlz\simpleedit\data\BlockData;
 use xvqrlz\simpleedit\data\BlockStorage;
 use xvqrlz\simpleedit\utils\Utils;
 
 final class EditManager
 {
+    use SingletonTrait;
+
     private array $selections = [];
     private array $history = [];
     private array $clipboard = [];
