@@ -15,6 +15,10 @@ use xvqrlz\simpleedit\command\ReplaceCommand;
 use xvqrlz\simpleedit\command\ExpandCommand;
 use xvqrlz\simpleedit\command\ContractCommand;
 use xvqrlz\simpleedit\command\SphereCommand;
+use xvqrlz\simpleedit\command\CylinderCommand;
+use xvqrlz\simpleedit\command\SpiralCommand;
+use xvqrlz\simpleedit\command\PyramidCommand;
+use xvqrlz\simpleedit\command\WallsCommand;
 use xvqrlz\simpleedit\manager\EditManager;
 
 final class Loader extends PluginBase
@@ -39,7 +43,11 @@ final class Loader extends PluginBase
             new ReplaceCommand($this),
             new ExpandCommand($this),
             new ContractCommand($this),
-            new SphereCommand($this)
+            new SphereCommand($this),
+            new CylinderCommand($this),
+            new SpiralCommand($this),
+            new PyramidCommand($this),
+            new WallsCommand($this)
         ];
 
         $this->getServer()->getCommandMap()->registerAll("simpleedit", $commands);

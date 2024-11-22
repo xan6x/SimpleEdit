@@ -1,6 +1,6 @@
 name: SimpleEdit
 main: xvqrlz\simpleedit\Loader
-version: 1.0.0
+version: 1.0.1
 api: 3.0.0-ALPHA7
 author: xvqrlz
 website: https://vk.com/xvqrlz
@@ -36,4 +36,16 @@ permissions:
     default: op
   simpleedit.command.sphere:
     description: Allows creating a sphere
+    default: op
+  simpleedit.command.cylinder:
+    description: Allows creating a cylinder
+    default: op
+  simpleedit.command.pyramid:
+    description: Allows creating a pyramid
+    default: op
+  simpleedit.command.spiral:
+    description: Allows creating a spiral
+    default: op
+  simpleedit.command.walls:
+    description: Allows creating walls
     default: op
