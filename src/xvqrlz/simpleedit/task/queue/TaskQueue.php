@@ -21,11 +21,11 @@ final class TaskQueue
             self::$queue[$name] = [
                 'tasks' => [],
                 'isProcessing' => false,
-                'taskCount' => 0
+                'taskId' => 0
             ];
         }
 
-        $number = ++self::$queue[$name]['taskCount'];
+        $taskId = ++self::$queue[$name]['taskId'];
 
         $task = new QueuedBlockUpdateTask(
             $player->getLevel(),
@@ -38,7 +38,7 @@ final class TaskQueue
         );
 
         self::$queue[$name]['tasks'][] = $task;
-        $player->sendMessage(TextFormat::GREEN . "Task #{$number} added to the queue.");
+        $player->sendMessage(TextFormat::GREEN . "Task #{$taskId} added to the queue.");
 
         if (!self::$queue[$name]['isProcessing']) {
             self::next($name);
@@ -51,12 +51,12 @@ final class TaskQueue
             if (!self::$queue[$name]['isProcessing']) {
                 self::$queue[$name]['isProcessing'] = true;
 
-                $number = self::$queue[$name]['taskCount'] - count(self::$queue[$name]['tasks']) + 1;
+                $taskId = self::$queue[$name]['taskId'] - count(self::$queue[$name]['tasks']) + 1;
 
                 $player = Server::getInstance()->getPlayerExact($name);
 
                 if ($player) {
-                    $player->sendMessage(TextFormat::YELLOW . "Task #{$number} is now starting.");
+                    $player->sendMessage(TextFormat::YELLOW . "Task #{$taskId} is now starting.");
                 }
 
                 $task = array_shift(self::$queue[$name]['tasks']);
