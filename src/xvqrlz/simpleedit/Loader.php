@@ -19,6 +19,7 @@ use xvqrlz\simpleedit\command\CylinderCommand;
 use xvqrlz\simpleedit\command\SpiralCommand;
 use xvqrlz\simpleedit\command\PyramidCommand;
 use xvqrlz\simpleedit\command\WallsCommand;
+use xvqrlz\simpleedit\command\RotateCommand;
 use xvqrlz\simpleedit\manager\EditManager;
 
 final class Loader extends PluginBase
@@ -47,7 +48,8 @@ final class Loader extends PluginBase
             new CylinderCommand($this),
             new SpiralCommand($this),
             new PyramidCommand($this),
-            new WallsCommand($this)
+            new WallsCommand($this),
+            new RotateCommand($this)
         ];
 
         $this->getServer()->getCommandMap()->registerAll("simpleedit", $commands);

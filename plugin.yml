@@ -49,3 +49,6 @@ permissions:
   simpleedit.command.walls:
     description: Allows creating walls
     default: op
+  simpleedit.command.rotate:
+    description: Allows rotating the selected region
+    default: op

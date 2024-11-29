@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace xvqrlz\simpleedit\manager;
 
 use pocketmine\Player;
+use pocketmine\block\BlockIds;
 use pocketmine\level\Position;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 use xvqrlz\simpleedit\data\BlockData;
 use xvqrlz\simpleedit\data\BlockStorage;
 use xvqrlz\simpleedit\utils\Utils;
+use xvqrlz\simpleedit\task\queue\TaskQueue;
 use xvqrlz\simpleedit\trait\PositionTrait;
 use xvqrlz\simpleedit\trait\ClipboardTrait;
 use xvqrlz\simpleedit\trait\HistoryTrait;
@@ -46,7 +48,7 @@ final class EditManager
             $blockStorage->getStorage()
         );
 
-        Utils::scheduleTask($player, $blockPool, "§eBlocks replacing...", "§aRegion set complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, "§eBlocks replacing...", "§aRegion set complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function copy(Player $player): void
@@ -86,7 +88,7 @@ final class EditManager
             $blockPool[] = new BlockData($blockData->getId(), $blockData->getMeta(), $newPosition);
         }
 
-        Utils::scheduleTask($player, $blockPool, "§aPasting blocks...", "§aPaste complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, "§aPasting blocks...", "§aPaste complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function replace(Player $player, int $oldBlockId, int $newBlockId, int $oldMeta = 0, int $newMeta = 0): void
@@ -112,7 +114,7 @@ final class EditManager
             $blockStorage->getStorage()
         );
 
-        Utils::scheduleTask($player, $blockPool, "§eReplacing blocks...", "§aReplace complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, "§eReplacing blocks...", "§aReplace complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function expand(Player $player, string $direction, int $amount): void
@@ -196,7 +198,7 @@ final class EditManager
 
         $this->addHistory($name, new BlockStorage($player->getLevel(), $centerX - $radius, $centerY, $centerZ - $radius, $centerX + $radius, $centerY + $height, $centerZ + $radius));
 
-        Utils::scheduleTask($player, $blockPool, "§eGenerating cylinder...", "§aCylinder generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, "§eGenerating cylinder...", "§aCylinder generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function generatePyramid(Player $player, Position $center, int $baseWidth, int $height, int $blockId, int $meta = 0): void
@@ -226,7 +228,7 @@ final class EditManager
 
         $this->addHistory($name, new BlockStorage($player->getLevel(), $centerX - $baseWidth / 2, $centerY, $centerZ - $baseWidth / 2, $centerX + $baseWidth / 2, $centerY + $height, $centerZ + $baseWidth / 2));
 
-        Utils::scheduleTask($player, $blockPool, "§eGenerating pyramid...", "§aPyramid generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, "§eGenerating pyramid...", "§aPyramid generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function generateSpiral(Player $player, Position $center, int $radius, int $height, int $blockId, int $meta = 0): void
@@ -253,7 +255,7 @@ final class EditManager
 
         $this->addHistory($name, new BlockStorage($player->getLevel(), $centerX - $radius, $centerY, $centerZ - $radius, $centerX + $radius, $centerY + $height, $centerZ + $radius));
 
-        Utils::scheduleTask($player, $blockPool, "§eGenerating spiral...", "§aSpiral generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, "§eGenerating spiral...", "§aSpiral generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function generateWalls(Player $player, int $blockId, int $meta = 0): void
@@ -295,7 +297,7 @@ final class EditManager
 
         $this->addHistory($name, new BlockStorage($player->getLevel(), $minX, $minY, $minZ, $maxX, $maxY, $maxZ));
 
-        Utils::scheduleTask($player, $blockPool, "§eGenerating walls...", "§aWalls generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, "§eGenerating walls...", "§aWalls generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 
     public function generateSphere(Player $player, Position $center, int $radius, int $blockId, int $meta = 0): void
@@ -325,7 +327,63 @@ final class EditManager
 
         $this->addHistory($name, new BlockStorage($player->getLevel(), $centerX - $radius, $centerY - $radius, $centerZ - $radius, $centerX + $radius, $centerY + $radius, $centerZ + $radius));
 
-        Utils::scheduleTask($player, $blockPool, "§eGenerating sphere...", "§aSphere generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, "§eGenerating sphere...", "§aSphere generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+    }
+
+    public function rotate(Player $player, int $angle): void
+    {
+        $startTime = microtime(true);
+        $name = strtolower($player->getName());
+
+        $pos1 = $this->getPosition($player, 1);
+        $pos2 = $this->getPosition($player, 2);
+
+        if ($pos1 === null || $pos2 === null) {
+            $player->sendMessage("§cBoth positions must be set.");
+            return;
+        }
+
+        $centerX = ($pos1->x + $pos2->x) / 2;
+        $centerY = ($pos1->y + $pos2->y) / 2;
+        $centerZ = ($pos1->z + $pos2->z) / 2;
+
+        $angleRad = deg2rad($angle);
+        $sin = sin($angleRad);
+        $cos = cos($angleRad);
+
+        [$minX, $minY, $minZ, $maxX, $maxY, $maxZ] = Utils::calculateBounds($pos1, $pos2);
+
+        $this->setRegion($player, BlockIds::AIR);
+
+        $blockStorage = new BlockStorage($player->getLevel(), $minX, $minY, $minZ, $maxX, $maxY, $maxZ);
+        $this->addHistory($name, $blockStorage);
+
+        $blockPool = [];
+
+        foreach ($blockStorage->getStorage() as $blockData) {
+            $pos = $blockData->getPosition();
+            $relativeX = $pos->x - $centerX;
+            $relativeZ = $pos->z - $centerZ;
+
+            $rotatedX = $relativeX * $cos - $relativeZ * $sin;
+            $rotatedZ = $relativeX * $sin + $relativeZ * $cos;
+
+            $newPosition = new Position(
+                (int) round($centerX + $rotatedX),
+                $pos->y,
+                (int) round($centerZ + $rotatedZ),
+                $player->getLevel()
+            );
+
+            $blockPool[] = new BlockData($blockData->getId(), $blockData->getMeta(), $newPosition);
+        }
+
+        TaskQueue::add(
+            $player,
+            $blockPool,
+            "§eRotating blocks...",
+            "§aRotation complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms."
+        );
     }
 
     public function undo(Player $player): void
@@ -341,6 +399,6 @@ final class EditManager
         $blockStorage = $this->removeHistory($name);
         $blockPool = $blockStorage->getStorage();
 
-        Utils::scheduleTask($player, $blockPool, "§eUndoing changes...", "§aUndo complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, "§eUndoing changes...", "§aUndo complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
     }
 }
