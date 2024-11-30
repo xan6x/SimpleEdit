@@ -9,6 +9,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 use xvqrlz\simpleedit\manager\EditManager;
+use xvqrlz\simpleedit\translation\Translator;
 use xvqrlz\simpleedit\Loader;
 
 class WallsCommand extends Command
@@ -26,12 +27,12 @@ class WallsCommand extends Command
         }
 
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TextFormat::RED . "Only in-game");
+            $sender->sendMessage(Translator::translate("only.in.game", $sender));
             return false;
         }
 
         if (count($args) < 1) {
-            $sender->sendMessage(TextFormat::RED . "Invalid usage. Correct usage: /walls <block_id>[:<meta>]");
+            $sender->sendMessage(Translator::translate("invalid.usage.walls", $sender));
             return false;
         }
 

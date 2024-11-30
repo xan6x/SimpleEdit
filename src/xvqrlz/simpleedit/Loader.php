@@ -21,12 +21,14 @@ use xvqrlz\simpleedit\command\PyramidCommand;
 use xvqrlz\simpleedit\command\WallsCommand;
 use xvqrlz\simpleedit\command\RotateCommand;
 use xvqrlz\simpleedit\manager\EditManager;
+use xvqrlz\simpleedit\translation\Translator;
 
 final class Loader extends PluginBase
 {
 
     public function onEnable(): void
     {
+        Translator::initialize($this);
         EditManager::setInstance(new EditManager($this));
 
         $this->registerCommands();

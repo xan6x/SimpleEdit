@@ -16,6 +16,7 @@ use xvqrlz\simpleedit\task\queue\TaskQueue;
 use xvqrlz\simpleedit\trait\PositionTrait;
 use xvqrlz\simpleedit\trait\ClipboardTrait;
 use xvqrlz\simpleedit\trait\HistoryTrait;
+use xvqrlz\simpleedit\translation\Translator;
 
 final class EditManager
 {
@@ -34,7 +35,7 @@ final class EditManager
         $pos2 = $this->getPosition($player, 2);
 
         if ($pos1 === null || $pos2 === null) {
-            $player->sendMessage("§cBoth positions must be set.");
+            $player->sendMessage(Translator::translate("positions.not.set", $player));
             return;
         }
 
@@ -48,7 +49,7 @@ final class EditManager
             $blockStorage->getStorage()
         );
 
-        TaskQueue::add($player, $blockPool, "§eBlocks replacing...", "§aRegion set complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, Translator::translate("blocks.replacing", $player), Translator::translate("region.set.complete", $player, [round((microtime(true) - $startTime) * 1000, 2)]));
     }
 
     public function copy(Player $player): void
@@ -58,14 +59,14 @@ final class EditManager
         $pos2 = $this->getPosition($player, 2);
 
         if ($pos1 === null || $pos2 === null) {
-            $player->sendMessage("§cBoth positions must be set.");
+            $player->sendMessage(Translator::translate("positions.not.set", $player));
             return;
         }
 
         [$minX, $minY, $minZ, $maxX, $maxY, $maxZ] = Utils::calculateBounds($pos1, $pos2);
         $blockStorage = new BlockStorage($player->getLevel(), $minX, $minY, $minZ, $maxX, $maxY, $maxZ);
         $this->copyClipboard($name, $blockStorage->getStorage());
-        $player->sendMessage("§aCopied region to clipboard.");
+        $player->sendMessage(Translator::translate("region.copied", $player));
     }
 
     public function paste(Player $player, Position $target): void
@@ -74,7 +75,7 @@ final class EditManager
         $name = strtolower($player->getName());
 
         if ($this->getClipboard($name) == null) {
-            $player->sendMessage("§cClipboard is empty.");
+            $player->sendMessage(Translator::translate("clipboard.empty", $player));
             return;
         }
 
@@ -88,7 +89,7 @@ final class EditManager
             $blockPool[] = new BlockData($blockData->getId(), $blockData->getMeta(), $newPosition);
         }
 
-        TaskQueue::add($player, $blockPool, "§aPasting blocks...", "§aPaste complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, Translator::translate("pasting.blocks", $player), Translator::translate("paste.complete", $player, [round((microtime(true) - $startTime) * 1000, 2)]));
     }
 
     public function replace(Player $player, int $oldBlockId, int $newBlockId, int $oldMeta = 0, int $newMeta = 0): void
@@ -99,7 +100,7 @@ final class EditManager
         $pos2 = $this->getPosition($player, 2);
 
         if ($pos1 === null || $pos2 === null) {
-            $player->sendMessage("§cBoth positions must be set.");
+            $player->sendMessage(Translator::translate("positions.not.set", $player));
             return;
         }
 
@@ -114,7 +115,7 @@ final class EditManager
             $blockStorage->getStorage()
         );
 
-        TaskQueue::add($player, $blockPool, "§eReplacing blocks...", "§aReplace complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, Translator::translate("blocks.replacing", $player), Translator::translate("replace.complete", $player, [round((microtime(true) - $startTime) * 1000, 2)]));
     }
 
     public function expand(Player $player, string $direction, int $amount): void
@@ -124,7 +125,7 @@ final class EditManager
         $pos2 = $this->getPosition($player, 2);
 
         if ($pos1 === null || $pos2 === null) {
-            $player->sendMessage("§cBoth positions must be set.");
+            $player->sendMessage(Translator::translate("positions.not.set", $player));
             return;
         }
 
@@ -135,13 +136,13 @@ final class EditManager
             "south" => $pos2->z += $amount,
             "west" => $pos1->x -= $amount,
             "east" => $pos2->x += $amount,
-            default => $player->sendMessage("§cInvalid direction. Use correct: up, down, north, south, west, or east.")
+            default => $player->sendMessage(Translator::translate("invalid.direction", $player))
         };
 
         $this->setPosition($player, $pos1, 1);
         $this->setPosition($player, $pos2, 2);
 
-        $player->sendMessage("§aRegion expanded $amount blocks $direction.");
+        $player->sendMessage(Translator::translate("region.expanded", $player, [$amount, $direction]));
     }
 
     public function contract(Player $player, string $direction, int $amount): void
@@ -151,7 +152,7 @@ final class EditManager
         $pos2 = $this->getPosition($player, 2);
 
         if ($pos1 === null || $pos2 === null) {
-            $player->sendMessage("§cBoth positions must be set.");
+            $player->sendMessage(Translator::translate("positions.not.set", $player));
             return;
         }
 
@@ -162,13 +163,13 @@ final class EditManager
             "south" => $pos2->z -= $amount,
             "west" => $pos1->x += $amount,
             "east" => $pos2->x -= $amount,
-            default => $player->sendMessage("§cInvalid direction. Use correct: up, down, north, south, west, or east.")
+            default => $player->sendMessage(Translator::translate("invalid.direction", $player))
         };
 
         $this->setPosition($player, $pos1, 1);
         $this->setPosition($player, $pos2, 2);
 
-        $player->sendMessage("§aRegion contracted $amount blocks $direction.");
+        $player->sendMessage(Translator::translate("region.contracted", $player, [$amount, $direction]));
     }
 
     public function generateCylinder(Player $player, Position $center, int $radius, int $height, int $blockId, int $meta = 0): void
@@ -177,7 +178,7 @@ final class EditManager
         $name = strtolower($player->getName());
 
         if ($radius <= 0 || $height <= 0) {
-            $player->sendMessage("§cRadius and height must be greater than 0.");
+            $player->sendMessage(Translator::translate("radius.height.invalid", $player));
             return;
         }
 
@@ -198,7 +199,7 @@ final class EditManager
 
         $this->addHistory($name, new BlockStorage($player->getLevel(), $centerX - $radius, $centerY, $centerZ - $radius, $centerX + $radius, $centerY + $height, $centerZ + $radius));
 
-        TaskQueue::add($player, $blockPool, "§eGenerating cylinder...", "§aCylinder generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, Translator::translate("generating.cylinder", $player), Translator::translate("cylinder.generated", $player, [round((microtime(true) - $startTime) * 1000, 2)]));
     }
 
     public function generatePyramid(Player $player, Position $center, int $baseWidth, int $height, int $blockId, int $meta = 0): void
@@ -207,7 +208,7 @@ final class EditManager
         $name = strtolower($player->getName());
 
         if ($baseWidth <= 0 || $height <= 0) {
-            $player->sendMessage("§cBase width and height must be greater than 0.");
+            $player->sendMessage(Translator::translate("base.width.height.invalid", $player));
             return;
         }
 
@@ -228,7 +229,7 @@ final class EditManager
 
         $this->addHistory($name, new BlockStorage($player->getLevel(), $centerX - $baseWidth / 2, $centerY, $centerZ - $baseWidth / 2, $centerX + $baseWidth / 2, $centerY + $height, $centerZ + $baseWidth / 2));
 
-        TaskQueue::add($player, $blockPool, "§eGenerating pyramid...", "§aPyramid generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, Translator::translate("generating.pyramid", $player), Translator::translate("pyramid.generated", $player, [round((microtime(true) - $startTime) * 1000, 2)]));
     }
 
     public function generateSpiral(Player $player, Position $center, int $radius, int $height, int $blockId, int $meta = 0): void
@@ -237,7 +238,7 @@ final class EditManager
         $name = strtolower($player->getName());
 
         if ($radius <= 0 || $height <= 0) {
-            $player->sendMessage("§cRadius and height must be greater than 0.");
+            $player->sendMessage(Translator::translate("radius.height.invalid", $player));
             return;
         }
 
@@ -255,7 +256,7 @@ final class EditManager
 
         $this->addHistory($name, new BlockStorage($player->getLevel(), $centerX - $radius, $centerY, $centerZ - $radius, $centerX + $radius, $centerY + $height, $centerZ + $radius));
 
-        TaskQueue::add($player, $blockPool, "§eGenerating spiral...", "§aSpiral generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, Translator::translate("generating.spiral", $player), Translator::translate("spiral.generated", $player, [round((microtime(true) - $startTime) * 1000, 2)]));
     }
 
     public function generateWalls(Player $player, int $blockId, int $meta = 0): void
@@ -267,7 +268,7 @@ final class EditManager
         $pos2 = $this->getPosition($player, 2);
 
         if ($pos1 === null || $pos2 === null) {
-            $player->sendMessage("§cBoth positions must be set.");
+            $player->sendMessage(Translator::translate("positions.not.set", $player));
             return;
         }
 
@@ -297,7 +298,7 @@ final class EditManager
 
         $this->addHistory($name, new BlockStorage($player->getLevel(), $minX, $minY, $minZ, $maxX, $maxY, $maxZ));
 
-        TaskQueue::add($player, $blockPool, "§eGenerating walls...", "§aWalls generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, Translator::translate("generating.walls", $player), Translator::translate("walls.generated", $player, [round((microtime(true) - $startTime) * 1000, 2)]));
     }
 
     public function generateSphere(Player $player, Position $center, int $radius, int $blockId, int $meta = 0): void
@@ -306,7 +307,7 @@ final class EditManager
         $name = strtolower($player->getName());
         
         if ($radius <= 0) {
-            $player->sendMessage("§cRadius must be greater than 0.");
+            $player->sendMessage(Translator::translate("radius.invalid", $player));
             return;
         }
 
@@ -327,7 +328,7 @@ final class EditManager
 
         $this->addHistory($name, new BlockStorage($player->getLevel(), $centerX - $radius, $centerY - $radius, $centerZ - $radius, $centerX + $radius, $centerY + $radius, $centerZ + $radius));
 
-        TaskQueue::add($player, $blockPool, "§eGenerating sphere...", "§aSphere generated in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, Translator::translate("generating.sphere", $player), Translator::translate("sphere.generated", $player, [round((microtime(true) - $startTime) * 1000, 2)]));
     }
 
     public function rotate(Player $player, int $angle): void
@@ -339,7 +340,7 @@ final class EditManager
         $pos2 = $this->getPosition($player, 2);
 
         if ($pos1 === null || $pos2 === null) {
-            $player->sendMessage("§cBoth positions must be set.");
+            $player->sendMessage(Translator::translate("positions.not.set", $player));
             return;
         }
 
@@ -378,12 +379,7 @@ final class EditManager
             $blockPool[] = new BlockData($blockData->getId(), $blockData->getMeta(), $newPosition);
         }
 
-        TaskQueue::add(
-            $player,
-            $blockPool,
-            "§eRotating blocks...",
-            "§aRotation complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms."
-        );
+        TaskQueue::add($player, $blockPool, Translator::translate("rotating.blocks", $player), Translator::translate("rotation.complete", $player, [round((microtime(true) - $startTime) * 1000, 2)]));
     }
 
     public function undo(Player $player): void
@@ -392,13 +388,13 @@ final class EditManager
         $name = strtolower($player->getName());
 
         if (empty($this->getLastHistory($name))) {
-            $player->sendMessage("§cNo edits to undo.");
+            $player->sendMessage(Translator::translate("no.edits.undo", $player));
             return;
         }
 
         $blockStorage = $this->removeHistory($name);
         $blockPool = $blockStorage->getStorage();
 
-        TaskQueue::add($player, $blockPool, "§eUndoing changes...", "§aUndo complete in " . round((microtime(true) - $startTime) * 1000, 2) . " ms.");
+        TaskQueue::add($player, $blockPool, Translator::translate("undoing.changes", $player), Translator::translate("undo.complete", $player, [round((microtime(true) - $startTime) * 1000, 2)]));
     }
 }

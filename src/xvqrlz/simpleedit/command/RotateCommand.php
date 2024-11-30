@@ -7,8 +7,8 @@ namespace xvqrlz\simpleedit\command;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
-use pocketmine\utils\TextFormat;
 use xvqrlz\simpleedit\manager\EditManager;
+use xvqrlz\simpleedit\translation\Translator;
 use xvqrlz\simpleedit\Loader;
 
 class RotateCommand extends Command
@@ -26,19 +26,19 @@ class RotateCommand extends Command
         }
 
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TextFormat::RED . "Only in-game.");
+            $sender->sendMessage(Translator::translate("only.in.game", $sender));
             return false;
         }
 
         if (count($args) < 1) {
-            $sender->sendMessage(TextFormat::RED . "Invalid usage. Correct usage: /rotate <angle>");
+            $sender->sendMessage(Translator::translate("invalid.usage.rotate", $sender));
             return false;
         }
 
-        $angle = (int) $args[0];
+        $angle = (int)$args[0];
 
         if ($angle === 0) {
-            $sender->sendMessage(TextFormat::RED . "Angle must be non-zero.");
+            $sender->sendMessage(Translator::translate("angle.must.be.non.zero", $sender));
             return false;
         }
 

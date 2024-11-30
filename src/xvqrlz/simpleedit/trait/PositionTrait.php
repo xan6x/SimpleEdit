@@ -6,6 +6,7 @@ namespace xvqrlz\simpleedit\trait;
 
 use pocketmine\Player;
 use pocketmine\level\Position;
+use xvqrlz\simpleedit\translation\Translator;
 
 trait PositionTrait
 {
@@ -16,7 +17,16 @@ trait PositionTrait
         $name = strtolower($player->getName());
         $this->selections[$name] ??= [null, null];
         $this->selections[$name][$pos - 1] = $position;
-        $player->sendMessage("§aPosition $pos set to ({$position->getFloorX()}, {$position->getFloorY()}, {$position->getFloorZ()}).");
+        $player->sendMessage(Translator::translate(
+            "position.set",
+            $player,
+            [
+                $pos,
+                $position->getFloorX(),
+                $position->getFloorY(),
+                $position->getFloorZ()
+            ]
+        ));
     }
 
     public function getPosition(Player $player, int $pos): ?Position

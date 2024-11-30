@@ -7,7 +7,7 @@ namespace xvqrlz\simpleedit\task\queue;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\Player;
-use pocketmine\utils\TextFormat;
+use xvqrlz\simpleedit\translation\Translator;
 use xvqrlz\simpleedit\task\QueuedBlockUpdateTask;
 
 final class TaskQueue
@@ -38,7 +38,7 @@ final class TaskQueue
         );
 
         self::$queue[$name]['tasks'][] = $task;
-        $player->sendMessage(TextFormat::GREEN . "Task #{$taskId} added to the queue.");
+        $player->sendMessage(Translator::translate("task.added", $player, [$taskId]));
 
         if (!self::$queue[$name]['isProcessing']) {
             self::next($name);
@@ -47,21 +47,18 @@ final class TaskQueue
 
     private static function next(string $name): void
     {
-        if (!empty(self::$queue[$name]['tasks'])) {
-            if (!self::$queue[$name]['isProcessing']) {
-                self::$queue[$name]['isProcessing'] = true;
+        if (!empty(self::$queue[$name]['tasks']) && !self::$queue[$name]['isProcessing']) {
+            self::$queue[$name]['isProcessing'] = true;
 
-                $taskId = self::$queue[$name]['taskId'] - count(self::$queue[$name]['tasks']) + 1;
+            $taskId = self::$queue[$name]['taskId'] - count(self::$queue[$name]['tasks']) + 1;
+            $player = Server::getInstance()->getPlayerExact($name);
 
-                $player = Server::getInstance()->getPlayerExact($name);
-
-                if ($player) {
-                    $player->sendMessage(TextFormat::YELLOW . "Task #{$taskId} is now starting.");
-                }
-
-                $task = array_shift(self::$queue[$name]['tasks']);
-                Server::getInstance()->getScheduler()->scheduleRepeatingTask($task, 1);
+            if ($player) {
+                $player->sendMessage(Translator::translate("task.starting", $player, [$taskId]));
             }
+
+            $task = array_shift(self::$queue[$name]['tasks']);
+            Server::getInstance()->getScheduler()->scheduleRepeatingTask($task, 1);
         } else {
             self::$queue[$name]['isProcessing'] = false;
         }
