@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xvqrlz\simpleedit;
 
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\SingletonTrait;
 use xvqrlz\simpleedit\command\SetCommand;
 use xvqrlz\simpleedit\command\UndoCommand;
 use xvqrlz\simpleedit\command\Pos1Command;
@@ -25,9 +26,12 @@ use xvqrlz\simpleedit\translation\Translator;
 
 final class Loader extends PluginBase
 {
+    use SingletonTrait;
 
     public function onEnable(): void
     {
+        self::setInstance($this);
+
         Translator::initialize($this);
         EditManager::setInstance(new EditManager($this));
 

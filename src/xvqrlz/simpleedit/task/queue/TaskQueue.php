@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace xvqrlz\simpleedit\task\queue;
 
 use pocketmine\scheduler\Task;
-use pocketmine\Server;
 use pocketmine\Player;
+use pocketmine\Server;
+use xvqrlz\simpleedit\Loader;
 use xvqrlz\simpleedit\translation\Translator;
 use xvqrlz\simpleedit\task\QueuedBlockUpdateTask;
 
@@ -58,7 +59,7 @@ final class TaskQueue
             }
 
             $task = array_shift(self::$queue[$name]['tasks']);
-            Server::getInstance()->getScheduler()->scheduleRepeatingTask($task, 1);
+            Loader::getInstance()->getScheduler()->scheduleRepeatingTask($task, 1);
         } else {
             self::$queue[$name]['isProcessing'] = false;
         }

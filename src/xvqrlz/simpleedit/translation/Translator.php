@@ -6,11 +6,10 @@ namespace xvqrlz\simpleedit\translation;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
-use pocketmine\Server;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 
-final class Translator{
+final class Translator {
     public const DEFAULT_LOCALE = self::ENGLISH;
     public const ENGLISH = 'en_US';
     public const RUSSIAN = 'ru_RU';
@@ -25,13 +24,28 @@ final class Translator{
 
     public static function initialize(PluginBase $plugin): void
     {
+        $localeFolder = $plugin->getDataFolder() . 'locale/';
+
+        if (!is_dir($localeFolder)) {
+            @mkdir($localeFolder, 0777, true);
+        }
+
         foreach (self::LOCALES as $locale) {
-            $path = 'data/locale/' . $locale . '.ini';
-            $plugin->saveResource($path, true);
-            self::$translations[$locale] = \array_map(
-                '\\stripcslashes',
-                \parse_ini_file($plugin->getDataFolder() . $path, false, \INI_SCANNER_RAW)
-            );
+            $fileName = "locale/$locale.ini";
+            $filePath = $localeFolder . "$locale.ini";
+
+            if (!file_exists($filePath)) {
+                $plugin->saveResource($fileName);
+            }
+
+            if (file_exists($filePath)) {
+                self::$translations[$locale] = array_map(
+                    'stripcslashes',
+                    parse_ini_file($filePath, false, INI_SCANNER_RAW)
+                );
+            } else {
+                $plugin->getLogger()->warning("Localization file $fileName is missing.");
+            }
         }
     }
 
@@ -41,11 +55,11 @@ final class Translator{
         array $args = []
     ): string {
         if ($locale instanceof Player) {
-            $locale = $locale->getLanguageCode();
+            $locale = $locale->getLocale();
         } elseif ($locale instanceof CommandSender) {
             $locale = $locale instanceof ConsoleCommandSender
                 ? self::DEFAULT_LOCALE
-                : $locale->getLanguageCode();
+                : $locale->getLocale();
         } elseif (!\is_string($locale)) {
             $locale = self::DEFAULT_LOCALE;
         }
