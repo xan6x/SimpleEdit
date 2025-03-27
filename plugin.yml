@@ -3,7 +3,7 @@ main: xvqrlz\simpleedit\Loader
 version: 1.0.1
 api: ["3.0.0-ALPHA7", "3.0.0", "3.0.1"]
 author: xvqrlz
-website: https://vk.com/xvqrlz
+website: https://t.me/xvqrlz
 description: A simple and optimized WorldEdit plugin for PocketMine-MP
 
 permissions:
